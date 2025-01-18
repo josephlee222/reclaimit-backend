@@ -1,14 +1,12 @@
 from chalice import Chalice
 from chalicelib.userRoutes import user_routes
-from chalicelib.farmRoutes import farm_routes
-from chalicelib.taskRoutes import task_routes
-from chalicelib.authorizers import auth_functions, admin_authorizer, farmer_authorizer
+from chalicelib.itemRoutes import item_routes
+from chalicelib.authorizers import auth_functions, admin_authorizer
 import os
 
 app = Chalice(app_name='reclaimit')
 app.register_blueprint(user_routes)
-app.register_blueprint(farm_routes)
-app.register_blueprint(task_routes)
+app.register_blueprint(item_routes)
 app.register_blueprint(auth_functions)
 
 @app.route('/', cors=True)
@@ -18,10 +16,6 @@ def index():
 @app.route('/test/admin', authorizer=admin_authorizer, cors=True)
 def test_admin():
     return {'message': 'You have access to admin routes!'}
-
-@app.route('/test/farmer', authorizer=farmer_authorizer, cors=True)
-def test_farmer():
-    return {'message': 'You have access to farm routes!'}
 
 @app.route('/test/env', cors=True)
 def test_env():

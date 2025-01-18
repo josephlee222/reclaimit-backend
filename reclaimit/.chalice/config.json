@@ -1,9 +1,8 @@
 {
   "version": "2.0",
-  "app_name": "midorisky",
+  "app_name": "reclaimit",
   "environment_variables": {
-    "TEST": "test_value",
-    "USER_POOL_ID": "us-east-1_cgJgNBs7M",
+    "USER_POOL_ID": "us-east-1_skuWkGMQG",
     "REGION": "us-east-1"
   },
   "automatic_layer": true,
