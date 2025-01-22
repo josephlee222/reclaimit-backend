@@ -1,0 +1,39 @@
+{
+  "resources": [
+    {
+      "name": "managed-layer",
+      "resource_type": "lambda_layer",
+      "layer_version_arn": "arn:aws:lambda:us-east-1:710271913812:layer:reclaimit-dev-managed-layer:3"
+    },
+    {
+      "name": "api_handler_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::710271913812:role/reclaimit-dev-api_handler",
+      "role_name": "reclaimit-dev-api_handler"
+    },
+    {
+      "name": "api_handler",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-east-1:710271913812:function:reclaimit-dev"
+    },
+    {
+      "name": "admin_authorizer_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::710271913812:role/reclaimit-dev-admin_authorizer",
+      "role_name": "reclaimit-dev-admin_authorizer"
+    },
+    {
+      "name": "admin_authorizer",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-east-1:710271913812:function:reclaimit-dev-admin_authorizer"
+    },
+    {
+      "name": "rest_api",
+      "resource_type": "rest_api",
+      "rest_api_id": "xqxh1w8l97",
+      "rest_api_url": "https://xqxh1w8l97.execute-api.us-east-1.amazonaws.com/api/"
+    }
+  ],
+  "schema_version": "2.0",
+  "backend": "api"
+}
