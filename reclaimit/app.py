@@ -11,7 +11,7 @@ app.register_blueprint(auth_functions)
 
 @app.route('/', cors=True)
 def index():
-    return {'message': 'Hello world, from MidoriSKY!'}
+    return {'message': 'Hello world, from ReclaimIt API!'}
 
 @app.route('/test/admin', authorizer=admin_authorizer, cors=True)
 def test_admin():
