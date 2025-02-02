@@ -3,7 +3,10 @@
   "app_name": "reclaimit",
   "environment_variables": {
     "USER_POOL_ID": "us-east-1_skuWkGMQG",
-    "REGION": "us-east-1"
+    "REGION": "us-east-1",
+    "S3_BUCKET": "reclaimit-bucket",
+    "SES_EMAIL": "reclaimit@cat2.link",
+    "SQS_URL": "https://sqs.us-east-1.amazonaws.com/710271913812/reclaimit-queue"
   },
   "automatic_layer": true,
   "lambda_memory_size": 512,

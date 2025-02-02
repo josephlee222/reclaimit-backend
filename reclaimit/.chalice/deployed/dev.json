@@ -3,7 +3,26 @@
     {
       "name": "managed-layer",
       "resource_type": "lambda_layer",
-      "layer_version_arn": "arn:aws:lambda:us-east-1:710271913812:layer:reclaimit-dev-managed-layer:3"
+      "layer_version_arn": "arn:aws:lambda:us-east-1:710271913812:layer:reclaimit-dev-managed-layer:20"
+    },
+    {
+      "name": "handle_sqs_message_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::710271913812:role/reclaimit-dev-handle_sqs_message",
+      "role_name": "reclaimit-dev-handle_sqs_message"
+    },
+    {
+      "name": "handle_sqs_message",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-east-1:710271913812:function:reclaimit-dev-handle_sqs_message"
+    },
+    {
+      "name": "handle_sqs_message-sqs-event-source",
+      "resource_type": "sqs_event",
+      "queue_arn": "arn:aws:sqs:us-east-1:710271913812:reclaimit-queue",
+      "event_uuid": "459199e3-df54-441b-a2a4-b28b2fb33aae",
+      "queue": "reclaimit-queue",
+      "lambda_arn": "arn:aws:lambda:us-east-1:710271913812:function:reclaimit-dev-handle_sqs_message"
     },
     {
       "name": "api_handler_role",

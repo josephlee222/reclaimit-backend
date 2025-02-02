@@ -1,6 +1,7 @@
 from chalice import Chalice
 from chalicelib.userRoutes import user_routes
 from chalicelib.itemRoutes import item_routes
+from chalicelib.notificationService import notification_service
 from chalicelib.authorizers import auth_functions, admin_authorizer
 import os
 
@@ -8,6 +9,7 @@ app = Chalice(app_name='reclaimit')
 app.register_blueprint(user_routes)
 app.register_blueprint(item_routes)
 app.register_blueprint(auth_functions)
+app.register_blueprint(notification_service)
 
 @app.route('/', cors=True)
 def index():
