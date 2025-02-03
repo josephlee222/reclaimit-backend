@@ -2,6 +2,7 @@ import boto3
 import pymysql
 import sys
 import logging
+import json
 from botocore.exceptions import ClientError
 
 # Configure logging
@@ -98,6 +99,33 @@ def create_s3():
 
     s3.create_bucket(**create_args)
     s3.put_object(Bucket=bucket_name, Key='items/')
+
+    # Disable block all public access
+    s3.put_public_access_block(
+        Bucket=bucket_name,
+        PublicAccessBlockConfiguration={
+            'BlockPublicAcls': False,
+            'IgnorePublicAcls': False,
+            'BlockPublicPolicy': False,
+            'RestrictPublicBuckets': False
+        }
+    )
+
+    # Enable public read access in the items folder
+    s3.put_bucket_policy(
+        Bucket=bucket_name,
+        Policy=json.dumps({
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": "s3:GetObject",
+                    "Resource": f"arn:aws:s3:::{bucket_name}/items/*"
+                }
+            ]
+        })
+    )
     logger.info(f"Created S3 bucket: {bucket_name}")
 
 
@@ -144,12 +172,27 @@ def create_cognito():
 
     logger.info(f"Created Cognito User Pool: {RESOURCES['cognito_pool_id']}")
 
+    # Create a user pool group for admins
+    idp.create_group(
+        UserPoolId=RESOURCES['cognito_pool_id'],
+        GroupName='Admin'
+    )
+
+    logger.info("Created Cognito User Pool group: Admin")
+
     # Create user pool client
     client_response = idp.create_user_pool_client(
         UserPoolId=RESOURCES['cognito_pool_id'],
         ClientName=f"{CONFIG['app_name']}-client",
-        GenerateSecret=True,
+        GenerateSecret=False,
         RefreshTokenValidity=30,
+        AccessTokenValidity=1,
+        IdTokenValidity=1,
+        TokenValidityUnits={
+            'AccessToken': 'days',
+            'IdToken': 'days',
+            'RefreshToken': 'days'
+        },
         ExplicitAuthFlows=[
             'ALLOW_ADMIN_USER_PASSWORD_AUTH',
             'ALLOW_USER_SRP_AUTH',
@@ -168,8 +211,84 @@ def create_cognito():
             'ProviderName': f"cognito-idp.{CONFIG['region']}.amazonaws.com/{RESOURCES['cognito_pool_id']}"
         }]
     )
+
     RESOURCES['cognito_identities_pool_id'] = identity_response['IdentityPoolId']
     logger.info(f"Created Identity Pool: {RESOURCES['cognito_identities_pool_id']}")
+
+    # Create IAM Role for authenticated users
+    role_name = f"{CONFIG['app_name']}-Cognito-Authenticated-Role"
+    assume_role_policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Federated": "cognito-identity.amazonaws.com"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                    "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud": RESOURCES['cognito_identities_pool_id']
+                    },
+                    "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "authenticated"
+                    }
+                }
+            }
+        ]
+    }
+
+    iam = boto3.client('iam')
+
+    # Create the IAM Role
+    try:
+        role_response = iam.create_role(
+            RoleName=role_name,
+            AssumeRolePolicyDocument=json.dumps(assume_role_policy),
+            Description="Role for authenticated users in the Cognito Identity Pool"
+        )
+        role_arn = role_response['Role']['Arn']
+        logger.info(f"Created IAM Role: {role_arn}")
+    except iam.exceptions.EntityAlreadyExistsException:
+        logger.info(f"IAM Role {role_name} already exists")
+        role_arn = f"arn:aws:iam::{boto3.client('sts').get_caller_identity()['Account']}:role/{role_name}"
+
+    # Attach the custom policy to the role
+    custom_policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "cognito-identity:GetCredentialsForIdentity"
+                ],
+                "Resource": [
+                    "*"
+                ]
+            }
+        ]
+    }
+
+    policy_name = f"{CONFIG['app_name']}-Cognito-Authenticated-Policy"
+    try:
+        iam.put_role_policy(
+            RoleName=role_name,
+            PolicyName=policy_name,
+            PolicyDocument=json.dumps(custom_policy)
+        )
+        logger.info(f"Attached policy {policy_name} to role {role_name}")
+    except Exception as e:
+        logger.error(f"Failed to attach policy: {e}")
+        raise
+
+    # Set roles for the identity pool
+    identity.set_identity_pool_roles(
+        IdentityPoolId=RESOURCES['cognito_identities_pool_id'],
+        Roles={
+            'authenticated': role_arn
+        }
+    )
+    logger.info(f"Set Identity Pool roles for {RESOURCES['cognito_identities_pool_id']}")
 
     # Create admin user
     try:
@@ -187,6 +306,13 @@ def create_cognito():
         logger.info("Created admin user")
     except idp.exceptions.UsernameExistsException:
         logger.warning("Admin user already exists")
+
+    # Add admin user to admin group
+    idp.admin_add_user_to_group(
+        UserPoolId=RESOURCES['cognito_pool_id'],
+        Username=CONFIG['init_username'],
+        GroupName='Admin'
+    )
 
 
 @handle_aws_error

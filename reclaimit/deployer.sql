@@ -5,6 +5,15 @@ create table category
     name varchar(128) not null
 );
 
+insert into category (name) values ('Laptops');
+insert into category (name) values ('Mobile Devices');
+insert into category (name) values ('Tablets');
+insert into category (name) values ('Accessories');
+insert into category (name) values ('Wallets');
+insert into category (name) values ('Keys');
+insert into category (name) values ('Bags');
+insert into category (name) values ('Others');
+
 create table items
 (
     id          int auto_increment
