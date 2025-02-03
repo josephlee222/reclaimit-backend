@@ -17,7 +17,7 @@ s3 = boto3.client('s3')
 
 @item_routes.route('/items', cors=True)
 def get_items():
-    sql = "SELECT *, category.name as categoryName FROM reclaimit.items INNER JOIN reclaimit.category ON reclaimit.items.categoryId = reclaimit.category.id"
+    sql = "SELECT *, category.name as categoryName FROM items INNER JOIN category ON items.categoryId = category.id"
     q = []
     limit = None
     if item_routes.current_request.query_params:
@@ -26,7 +26,7 @@ def get_items():
         limit = item_routes.current_request.query_params.get('limit')
 
         if a:
-            sql = "SELECT items.id, items.name, description, created_at, created_by, category.name as categoryName, min(ia.filename) as attachment FROM reclaimit.items INNER JOIN reclaimit.category ON reclaimit.items.categoryId = reclaimit.category.id LEFT JOIN reclaimit.itemAttachments ia ON reclaimit.items.id = ia.itemId"
+            sql = "SELECT items.id, items.name, description, created_at, created_by, category.name as categoryName, min(ia.filename) as attachment FROM items INNER JOIN category ON items.categoryId = category.id LEFT JOIN itemAttachments ia ON items.id = ia.itemId"
 
         if categoryId:
             # SQL query to get all items except the created_by field
@@ -60,14 +60,14 @@ def create_item():
     item = request.json_body
 
     # SQL query to insert a new item
-    sql = "INSERT INTO reclaimit.items (name, description, categoryId, created_by) VALUES (%s, %s, %s, %s)"
+    sql = "INSERT INTO items (name, description, categoryId, created_by) VALUES (%s, %s, %s, %s)"
 
     with create_connection().cursor() as cursor:
         # insert the new item and return the new item details
         cursor.execute(sql, (item['name'], item['description'], item['categoryId'], item_routes.current_request.context['authorizer']['principalId']))
 
         # get the last inserted item
-        cursor.execute("SELECT * FROM reclaimit.items WHERE id = %s", (cursor.lastrowid))
+        cursor.execute("SELECT * FROM items WHERE id = %s", (cursor.lastrowid))
 
         result = cursor.fetchone()
 
@@ -78,7 +78,7 @@ def create_item():
 @item_routes.route('/admin/items/{id}', cors=True, methods=['DELETE'], authorizer=admin_authorizer)
 def delete_item(id):
     # SQL query to delete an item
-    sql = "DELETE FROM reclaimit.items WHERE id = %s"
+    sql = "DELETE FROM items WHERE id = %s"
 
     with create_connection().cursor() as cursor:
         cursor.execute(sql, (id))
@@ -101,7 +101,7 @@ def delete_item(id):
 @item_routes.route('/admin/items/today', authorizer=admin_authorizer, cors=True)
 def get_items():
     # get today items
-    sql = "SELECT *, category.name as categoryName FROM reclaimit.items INNER JOIN reclaimit.category ON reclaimit.items.categoryId = reclaimit.category.id WHERE created_at >= CURDATE()"
+    sql = "SELECT *, category.name as categoryName FROM items INNER JOIN category ON items.categoryId = category.id WHERE created_at >= CURDATE()"
 
     with create_connection().cursor() as cursor:
         cursor.execute(sql)
@@ -112,7 +112,7 @@ def get_items():
 @item_routes.route('/items/{id}', cors=True)
 def get_item(id):
     # SQL query to get all items except the created_by field
-    sql = "SELECT *, category.name as categoryName FROM reclaimit.items INNER JOIN reclaimit.category ON reclaimit.items.categoryId = reclaimit.category.id WHERE reclaimit.items.id = %s"
+    sql = "SELECT *, category.name as categoryName FROM items INNER JOIN category ON items.categoryId = category.id WHERE items.id = %s"
 
     with create_connection().cursor() as cursor:
         cursor.execute(sql, (id))
@@ -127,7 +127,7 @@ def edit_item(id):
 
     # Dynamically build the SQL query
     params = []
-    sql = "UPDATE reclaimit.items SET "
+    sql = "UPDATE items SET "
     available_params = ["name", "description", "categoryId"]
 
     for key in available_params:
@@ -138,7 +138,7 @@ def edit_item(id):
     sql = sql[:-2] + " WHERE id = %s"
     params.append(id)
 
-    getSql = "SELECT * FROM reclaimit.items WHERE id = %s"
+    getSql = "SELECT * FROM items WHERE id = %s"
 
     try:
         with create_connection().cursor() as cursor:
@@ -154,7 +154,7 @@ def edit_item(id):
 @item_routes.route('/categories', cors=True)
 def get_categories():
     # SQL query to get all items except the created_by field
-    sql = "SELECT * FROM reclaimit.category"
+    sql = "SELECT * FROM category"
 
     with create_connection().cursor() as cursor:
         cursor.execute(sql)
@@ -194,7 +194,7 @@ def upload_item_attachment(id):
         Body=file
     )
 
-    sql = "INSERT INTO reclaimit.itemAttachments (itemId, filename) VALUES (%s, %s)"
+    sql = "INSERT INTO itemAttachments (itemId, filename) VALUES (%s, %s)"
 
     with create_connection().cursor() as cursor:
         cursor.execute(sql, (id, filename))

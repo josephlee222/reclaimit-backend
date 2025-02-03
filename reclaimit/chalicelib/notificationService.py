@@ -39,7 +39,7 @@ def handle_sqs_message(event):
         id = data['id']
 
         # query item by id
-        sql = "SELECT * FROM reclaimit.items WHERE id = %s"
+        sql = "SELECT * FROM items WHERE id = %s"
 
         with create_connection().cursor() as cursor:
             cursor.execute(sql, (id))
@@ -50,7 +50,7 @@ def handle_sqs_message(event):
             if item:
                 categoryId = item['categoryId']
                 # query notification subscribers based on categoryId
-                sql = "SELECT * FROM reclaimit.notification_subscriptions WHERE categoryId = %s"
+                sql = "SELECT * FROM notification_subscriptions WHERE categoryId = %s"
 
                 with create_connection().cursor() as cursor:
                     cursor.execute(sql, (categoryId))
