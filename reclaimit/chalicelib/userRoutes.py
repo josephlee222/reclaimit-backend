@@ -36,7 +36,7 @@ def get_users():
     return json.loads(json.dumps(output_users, default=str))
 
 
-@user_routes.route('/admin/users/{username}', authorizer=admin_authorizer, cors=True, methods=['GET'])
+@user_routes.route('/admin/users/{username}', cors=True, methods=['GET'])
 def get_user(username):
     user = idp_client.admin_get_user(
         UserPoolId=pool_id,

@@ -6,7 +6,8 @@
     "REGION": "us-east-1",
     "S3_BUCKET": "reclaimit-bucket",
     "SES_EMAIL": "reclaimit@cat2.link",
-    "SQS_URL": "https://sqs.us-east-1.amazonaws.com/710271913812/reclaimit-queue"
+    "SQS_URL": "https://sqs.us-east-1.amazonaws.com/710271913812/reclaimit-queue",
+    "SSM_PREFIX": "/reclaimit/"
   },
   "automatic_layer": true,
   "lambda_memory_size": 512,

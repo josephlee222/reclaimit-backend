@@ -60,11 +60,11 @@ def create_item():
     item = request.json_body
 
     # SQL query to insert a new item
-    sql = "INSERT INTO reclaimit.items (name, description, categoryId) VALUES (%s, %s, %s)"
+    sql = "INSERT INTO reclaimit.items (name, description, categoryId, created_by) VALUES (%s, %s, %s, %s)"
 
     with create_connection().cursor() as cursor:
         # insert the new item and return the new item details
-        cursor.execute(sql, (item['name'], item['description'], item['categoryId']))
+        cursor.execute(sql, (item['name'], item['description'], item['categoryId'], item_routes.current_request.context['authorizer']['principalId']))
 
         # get the last inserted item
         cursor.execute("SELECT * FROM reclaimit.items WHERE id = %s", (cursor.lastrowid))
