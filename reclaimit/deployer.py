@@ -1,3 +1,38 @@
+"""
+!!! IMPORTANT !!!
+DELETE THE deployed folder in .chalice/ BEFORE RUNNING THIS SCRIPT
+!!! IMPORTANT !!!
+
+DEPLOYER SCRIPT
+This script deploys the necessary AWS resources for the Reclaimit application.
+
+The script creates the following resources:
+- SQS queue for message processing
+- S3 bucket for file storage
+- Cognito User Pool and Identity Pool for user authentication
+- DB setup with schema initialization
+- SSM parameters for storing database connection details
+
+Pre-requisites:
+- AWS CLI configured with proper credentials
+- Python 3.12 environment with boto3 and pymysql installed
+- deployer.sql file with SQL schema for the database
+- RDS instance with proper security group settings and its connection details
+
+Usage:
+1. Update the CONFIG dictionary with proper values
+2. Run the script with Python 3.12
+3. Check the output for the created resources
+4. Update Chalice configuration with the created resources (config.json)
+5. Deploy the Chalice application (chalice deploy)
+6. (Frontend) Update the environment variables with the Cognito details, S3 bucket name and API Gateway URL
+7. (Frontend) Upload the frontend files to a git repository
+8. (Frontend) Deploy the frontend using Amplify by connecting to the git repository
+
+Note: This script is a one-time deployment script and should be run only once.
+REMEMBER TO ALSO UPDATE THE CONFIG.JSON FILE IN THE CHALICE DIRECTORY WITH THE CREATED RESOURCES AND DEPLOY THE CHALICE APPLICATION.
+"""
+
 import boto3
 import pymysql
 import sys

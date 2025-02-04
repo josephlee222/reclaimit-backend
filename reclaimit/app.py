@@ -11,6 +11,8 @@ app.register_blueprint(item_routes)
 app.register_blueprint(auth_functions)
 app.register_blueprint(notification_service)
 
+app.api.binary_types.append('multipart/form-data')
+
 @app.route('/', cors=True)
 def index():
     return {'message': 'Hello world, from ReclaimIt API!'}

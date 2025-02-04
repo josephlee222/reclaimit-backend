@@ -191,7 +191,8 @@ def upload_item_attachment(id):
     s3.put_object(
         Bucket=os.environ.get('S3_BUCKET'),
         Key=f'items/{id}/{filename}',
-        Body=file
+        Body=file,
+        ContentType=part.headers[b'Content-Type'].decode('utf-8')
     )
 
     sql = "INSERT INTO itemAttachments (itemId, filename) VALUES (%s, %s)"
@@ -200,6 +201,26 @@ def upload_item_attachment(id):
         cursor.execute(sql, (id, filename))
 
     return {'message': 'File uploaded successfully'}
+
+
+@item_routes.route('/admin/items/{id}/attachments/{filename}', cors=True, methods=['DELETE'], authorizer=admin_authorizer)
+def delete_item_attachment(id, filename):
+    try:
+        filename = urllib.unquote(filename)
+        s3.delete_object(
+            Bucket=os.environ.get('S3_BUCKET'),
+            Key=f'items/{id}/{filename}'
+        )
+    except Exception as e:
+        traceback.print_exc()
+        raise BadRequestError("Error deleting attachment")
+
+    sql = "DELETE FROM itemAttachments WHERE itemId = %s AND filename = %s"
+
+    with create_connection().cursor() as cursor:
+        cursor.execute(sql, (id, filename))
+
+    return {'message': 'File deleted successfully'}
 
 @item_routes.route('/items/{id}/attachments/{filename}', cors=True)
 def get_task_attachment(id, filename):

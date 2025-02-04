@@ -69,3 +69,11 @@ create table notification_subscriptions
         foreign key (categoryId) references category (id)
             on delete cascade
 );
+
+create table email_verifications
+(
+    email    varchar(512)     not null
+        primary key,
+    verified bit default b'0' null,
+    token    text             null
+);
