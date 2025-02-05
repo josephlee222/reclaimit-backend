@@ -119,7 +119,7 @@ def verify_subscription():
 
                 if result:
                     # Set email as verified
-                    sql = "UPDATE reclaimit.email_verifications SET verified = 1 WHERE email = %s"
+                    sql = "UPDATE email_verifications SET verified = 1 WHERE email = %s"
                     with create_connection().cursor() as cursor:
                         cursor.execute(sql, (email))
 
